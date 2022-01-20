@@ -1,0 +1,21 @@
+---
+title: "DDP Project 2"
+output: html_document
+---
+
+```{r}
+library(plotly)
+library(zoo)
+library(magrittr)
+suppressMessages(library(plotly))
+data("mtcars")
+data <- mtcars
+data$am <- factor(data$am, labels = c("auto","manual"))
+data$cyl <- factor(data$cyl)
+print(str(data))
+
+box_plot <- plot_ly(data = data, x=data$am, y=data$mpg, color = data$am, 
+                    type = "box")
+options(warn = -1)
+box_plot
+```
