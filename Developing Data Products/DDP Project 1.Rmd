@@ -1,0 +1,31 @@
+---
+title: "DDP Project 1"
+date: "20/01/2022"
+output: html_document
+---
+
+```{r}
+library(knitr)
+library(leaflet)
+library(dplyr)
+
+m <- leaflet() %>%
+  addTiles() %>%  
+  addMarkers(lat=25.6129, lng=455.2295) %>%
+  addMarkers(lat=25.5244,lng=455.1855) %>%
+  addMarkers(lat=25.6562,lng=455.2410) %>%
+  addMarkers(lat=25.5933,lng=445.2507) %>%
+  addMarkers(lat=25.6264,lng=455.2089) %>%
+  addMarkers(lat=25.6127,lng=455.2773) #%>%
+m
+
+df <- data.frame(lat=runif(500, min=24.65, max = 24.75 ),
+                 lng=runif(500, min=72.05, max = 72.15 ))  
+df %>%
+leaflet() %>%
+addTiles() %>%  
+addMarkers(clusterOptions = markerClusterOptions()) 
+
+
+```
+

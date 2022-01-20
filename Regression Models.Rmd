@@ -1,0 +1,28 @@
+---
+title: "Motor Trend Car Road Analysis"
+date: "18/01/2022"
+output: html_document
+---
+The data was extracted from the 1974 Motor Trend US magazine, and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973–74 models). I will then answer two questions
+“Is an automatic or manual transmission better for MPG”
+“Quantify the MPG difference between automatic and manual transmissions”
+
+```{r}
+library(datasets)
+data(mtcars)
+
+boxplot(mpg ~ am, data = mtcars, xlab = "Transmission", ylab = "Miles per gallon", main="Miles per gallon by Transmission Type")
+
+aggregate(mpg~am, data = mtcars, mean)
+auto <- mtcars[mtcars$am == 0,]
+manual <- mtcars[mtcars$am == 1,]
+t.test(auto$mpg, manual$mpg)
+m<-lm(mpg~am,data=mtcars)
+summary(m)
+model <- lm(mpg~am + wt + hp + cyl, data = mtcars)
+anova(m,model)
+summary(model)
+plot(model)
+```
+
+Hence, the residuals are normally distributed
