@@ -1,0 +1,70 @@
+---
+title: "ExerciseData"
+date: "19/01/2022"
+output: html_document
+---
+We will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants.
+```{r}
+library(lattice)
+library(ggplot2)
+library(caret)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+
+set.seed(1234)
+
+trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+
+testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+
+trainingset <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))
+testingset <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
+
+#trainingset <- read.csv("pml-training.csv", na.strings=c("NA","#DIV/0!", ""))
+#testingset <- read.csv("pml-testing.csv", na.strings=c("NA","#DIV/0!", ""))
+
+#dim(trainingset); dim(testingset); summary(trainingset); summary(testingset); str(trainingset); str(testingset); head(trainingset); head(testingset);               
+
+trainingset<-trainingset[,colSums(is.na(trainingset)) == 0]
+testingset <-testingset[,colSums(is.na(testingset)) == 0]
+
+trainingset   <-trainingset[,-c(1:7)]
+testingset <-testingset[,-c(1:7)]
+
+traintrainset <- createDataPartition(y=trainingset$classe, p=0.75, list=FALSE)
+TrainTrainingSet <- trainingset[traintrainset, ] 
+TestTrainingSet <- trainingset[-traintrainset, ]
+
+plot(TrainTrainingSet$classe, col="yellow", main="Plot of levels of variable classe within the TrainTrainingSet data set", xlab="classe", ylab="Frequency", ylim=c(0,300))
+
+```
+
+Above code shows that each level frequency is within the same order of magnitude of each other. Level A is the most frequent while level D is the least frequent.
+
+```{r}
+model1 <- rpart(classe ~ ., data=TrainTrainingSet, method="class")
+
+prediction1 <- predict(model1, TestTrainingSet, type = "class")
+
+rpart.plot(model1, main="Classification Tree", extra=102, under=TRUE, faclen=0)
+
+confusionMatrix(
+  factor(prediction1, levels = 1:148),
+  factor(TestTrainingSet$classe, levels = 1:148)
+)
+
+TrainTrainingSet$classe = factor(TrainTrainingSet$classe)
+model2 <- randomForest(classe ~. , data=TrainTrainingSet, method="class")
+
+prediction2 <- predict(model2, TestTrainingSet, type = "class")
+
+confusionMatrix(prediction2, TestTrainingSet$classe)
+
+#final result
+predictfinal <- predict(model2, testingset, type="class")
+predictfinal
+```
+
+Which prediction model to use?
+Random Forest algorithm performed better than Decision Trees. Accuracy for Random Forest model was 0.995 (95% CI: (0.993, 0.997)) compared to Decision Tree model with 0.739 (95% CI: (0.727, 0.752)). The Random Forests model is choosen. The expected out-of-sample error is estimated at 0.005, or 0.5%.
