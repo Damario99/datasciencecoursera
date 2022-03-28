@@ -1,0 +1,80 @@
+---
+title: "Milestone"
+author: "Sebastian D'Amario"
+date: "27/03/2022"
+output: html_document
+---
+
+```{r}
+
+library(tm)
+library(dplyr)
+library(ggplot2)
+library(quanteda)
+
+url <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
+download.file(url, dest = "capstone_dataset.zip")
+unzip ("capstone_dataset.zip")
+
+blogs_it <- readLines("final/en_US/en_US.blogs.txt", encoding = "UTF-8", skipNul = TRUE)
+news_it <- readLines("final/en_US/en_US.news.txt", encoding = "UTF-8", skipNul = TRUE)
+twitter_it <- readLines("final/en_US/en_US.twitter.txt", encoding = "UTF-8", skipNul = TRUE)
+
+badwords_url <-"http://www.cs.cmu.edu/~biglou/resources/bad-words.txt"
+download.file(badwords_url, destfile = "bad-words.txt")
+badwords <- readLines("bad-words.txt", encoding="UTF-8")
+
+data <- data.frame(file = c("Twitter", "Blogs", "News"),
+           File_size_MB = c(format(object.size(twitter_it), "MB"),
+                    format(object.size(blogs_it), "MB"),
+                   format(object.size(news_it), "MB")),
+         Line = c(summary(nchar(twitter_it))[6],
+                           summary(nchar(blogs_it))[6],
+                           summary(nchar(news_it))[6])
+)
+
+data
+
+set.seed(2048)
+sample_blogs <- sample(blogs_it, 5, replace=FALSE)
+sample_news <- sample(news_it, 5, replace=FALSE)
+sample_twitter <- sample(twitter_it, 5, replace=FALSE)
+sample_all <- c(sample_blogs, sample_news, sample_twitter)
+sample_all
+
+myDfm_ng1 <- dfm(sample_all, ngrams = 1, verbose = FALSE, concatenator = " ", remove = stopwords("english"), remove_punct = TRUE)
+myDfm_ng2 <- dfm(sample_all, ngrams = 2, verbose = FALSE, concatenator = " ", remove = stopwords("english"), remove_punct = TRUE)
+myDfm_ng3 <- dfm(sample_all, ngrams = 3, verbose = FALSE, concatenator = " ", remove = stopwords("english"), remove_punct = TRUE)
+
+myDfm_features_ng1 <- topfeatures(myDfm_ng1, 20)
+myDfm_features_ng2 <- topfeatures(myDfm_ng2, 20)
+myDfm_features_ng3 <- topfeatures(myDfm_ng3, 20)
+
+topDf_ng1 <- data.frame(
+    list(
+        term = names(myDfm_features_ng1),
+        frequency = unname(myDfm_features_ng1)
+    )
+)
+
+topDf_ng2 <- data.frame(
+    list(
+        term = names(myDfm_features_ng2),
+        frequency = unname(myDfm_features_ng2)
+    )
+)
+
+topDf_ng3 <- data.frame(
+    list(
+        term = names(myDfm_features_ng3),
+        frequency = unname(myDfm_features_ng3)
+    )
+)
+
+topDf_ng1$term <- with(topDf_ng1, reorder(term, -frequency))
+topDf_ng2$term <- with(topDf_ng2, reorder(term, -frequency))
+topDf_ng3$term <- with(topDf_ng3, reorder(term, -frequency))
+ggplot(topDf_ng1) + geom_point(aes(x=term, y=frequency)) +
+    theme(axis.text.x=element_text(angle=90, hjust=1))
+
+```
